@@ -132,4 +132,25 @@ run """
 
 (print ("a.b.c" split-on: "."))
 (print ("a.b.c" split-on: "." count: 2))
+
+(class Point is Object
+    (ivar
+        (x (int) #access)
+        (y (int) #access))
+    
+    (+ (Point) x: (int) y: (int) is
+        ((Point new) initWithX: x andY: y))
+
+    (- (Point) initWithX: x (int) andY: y (int) is
+        (set @x x)
+        (set @y y)
+        this)
+    
+    (- (string) string is
+        (+ "(" @x ", " @y ")")))
+
+(let [(p (Point x: 1 y: 2))]
+    (print Point)
+    (print (Point class-name))
+    (print p))
 """

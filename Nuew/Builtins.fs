@@ -153,7 +153,8 @@ let buildBuiltins () =
                     | _ -> None, rest
 
                 let cls = Object.New(className, parent)
-                Env.setGlobal className (EType <| TyObject cls)
+                // TODO: add extensions
+                Env.addGlobal className (EType <| TyObject cls)
 
                 // TODO: instancetype/this
                 let parseMethod exprs =
@@ -181,6 +182,7 @@ let buildBuiltins () =
                     match exprs with
                     | EName("cvar", _) :: cvars ->
                         let rec loop = function
+                            | [] -> ()
                             | EList (EName(name, _) :: t :: attrs) :: rest ->
                                 let t' = Eval.evalTypeAnno t
                                 cls.CVars[name] <- (t', ref ENil)
@@ -215,6 +217,7 @@ let buildBuiltins () =
 
                     | EName("ivar", _) :: cvars ->
                         let rec loop = function
+                            | [] -> ()
                             | EList (EName(name, _) :: t :: attrs) :: rest ->
                                 let t' = Eval.evalTypeAnno t
                                 cls.IVars[name] <- t'
@@ -244,7 +247,7 @@ let buildBuiltins () =
                                         Env.set name newValue inst
                                         newValue)
                                 loop rest
-                            | _ -> failwith "bad"
+                            | rest' -> failwith $"bad {rest'}"
                         loop cvars
 
                     | EName(("+" | "cmethod"), _) :: rest ->
@@ -266,7 +269,9 @@ let buildBuiltins () =
                             Ret = ret
                             Body = body |> List.map (Expr.bindToObject cls)
                         }, None
-
+                    
+                    | rest ->
+                        failwith $"invalid class member `{rest}`"
 
                 ENil
             | a -> bad_args "class" a
